@@ -559,7 +559,7 @@ def train(hyp, opt, device, tb_writer=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--use_initial_weights', type=bool, default=False, help='Whether to use initial weights')
+    parser.add_argument('--use-initial-weights', type=bool, default=False, help='Whether to use initial weights')
     parser.add_argument('--weights', type=str, default='', help='initial weights path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/coco.yaml', help='data.yaml path')
