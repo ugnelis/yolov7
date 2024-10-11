@@ -464,6 +464,10 @@ def train(hyp, opt, device, tb_writer=None):
                 torch.save(ckpt, last)
                 if best_fitness == fi:
                     torch.save(ckpt, best)
+                    if opt.best_pt_dir:
+                        best_pt_dir = Path(opt.best_pt_dir)
+                        best_pt_dir.mkdir(parents=True, exist_ok=True)
+                        torch.save(ckpt['model'], best_pt_dir / 'model.pt')
                 if (best_fitness == fi) and (epoch >= 200):
                     torch.save(ckpt, wdir / 'best_{:03d}.pt'.format(epoch))
                 if epoch == 0:
@@ -562,6 +566,7 @@ if __name__ == '__main__':
     parser.add_argument('--artifact_alias', type=str, default="latest", help='version of dataset artifact to be used')
     parser.add_argument('--freeze', nargs='+', type=int, default=[0], help='Freeze layers: backbone of yolov7=50, first3=0 1 2')
     parser.add_argument('--v5-metric', action='store_true', help='assume maximum recall as 1.0 in AP calculation')
+    parser.add_argument('--best-pt-dir', type=str, default='', help='directory to store best.pt separately')
     opt = parser.parse_args()
 
     # Set DDP variables
