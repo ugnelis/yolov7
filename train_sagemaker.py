@@ -80,19 +80,42 @@ def train(hyp, opt, device, tb_writer=None):
     assert len(names) == nc, '%g names found for nc=%g dataset in %s' % (len(names), nc, opt.data)  # check
 
     # Model
-    pretrained = weights.endswith('.pt')
-    if pretrained:
-        with torch_distributed_zero_first(rank):
-            attempt_download(weights)  # download if not found locally
-        ckpt = torch.load(weights, map_location=device)  # load checkpoint
-        model = Model(opt.cfg or ckpt['model'].yaml, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
-        exclude = ['anchor'] if (opt.cfg or hyp.get('anchors')) and not opt.resume else []  # exclude keys
-        state_dict = ckpt['model'].float().state_dict()  # to FP32
-        state_dict = intersect_dicts(state_dict, model.state_dict(), exclude=exclude)  # intersect
-        model.load_state_dict(state_dict, strict=False)  # load
-        logger.info('Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weights))  # report
+    pretrained = opt.use_initial_weights and opt.weights.endswith('.pt') and os.path.isfile(opt.weights)
+    if opt.use_initial_weights:
+        if pretrained:
+            logger.info(f"UseInitialWeights is True. Preparing to load weights from {opt.weights}")
+            try:
+                with torch_distributed_zero_first(rank):
+                    logger.info(f"Attempting to download weights from {opt.weights}")
+                    attempt_download(opt.weights)  # download if not found locally
+                logger.info(f"Successfully downloaded weights from {opt.weights}")
+
+                ckpt = torch.load(opt.weights, map_location=device)  # load checkpoint
+                logger.info("Loaded checkpoint successfully")
+
+                model = Model(opt.cfg or ckpt['model'].yaml, ch=3, nc=nc, anchors=hyp.get('anchors')).to(
+                    device)  # create
+                logger.info("Initialized model architecture")
+
+                exclude = ['anchor'] if (opt.cfg or hyp.get('anchors')) and not opt.resume else []  # exclude keys
+                state_dict = ckpt['model'].float().state_dict()  # to FP32
+                state_dict = intersect_dicts(state_dict, model.state_dict(), exclude=exclude)  # intersect
+                model.load_state_dict(state_dict, strict=False)  # load
+                logger.info(f"Transferred {len(state_dict)}/{len(model.state_dict())} items from {opt.weights}")
+            except Exception as e:
+                logger.error(f"Failed to load weights from {opt.weights}. Error: {e}")
+                logger.info("Initializing model without pre-trained weights due to the above error.")
+                model = Model(opt.cfg, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
+        else:
+            logger.warning(
+                f"UseInitialWeights is True, but the weights file '{opt.weights}' does not exist or is invalid."
+                " Initializing model without pre-trained weights."
+            )
+            model = Model(opt.cfg, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
     else:
+        logger.info("UseInitialWeights is False. Initializing model without pre-trained weights.")
         model = Model(opt.cfg, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
+
     with torch_distributed_zero_first(rank):
         check_dataset(data_dict)  # check
     train_path = data_dict['train']
@@ -536,6 +559,7 @@ def train(hyp, opt, device, tb_writer=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--use_initial_weights', type=bool, default=False, help='Whether to use initial weights')
     parser.add_argument('--weights', type=str, default='', help='initial weights path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/coco.yaml', help='data.yaml path')
