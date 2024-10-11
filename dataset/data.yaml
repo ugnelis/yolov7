@@ -1,9 +1,0 @@
-train: /home/ugnius/GIT/zero5/yolov7/dataset/train
-val: /home/ugnius/GIT/zero5/yolov7/dataset/val
-test: /home/ugnius/GIT/zero5/yolov7/dataset/val
-
-# number of classes
-nc: 7
-
-# class names
-names: [lpd, car, truck, bus, motorcycle, golfcart, person]
