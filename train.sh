@@ -1,0 +1,2 @@
+python train_sagemaker.py --cfg cfg/training/yolov7-tiny.yaml --hyp data/hyp.scratch.tiny.yaml --name exp --epochs 5 --batch-size 3 --data dataset/data.yaml --img 640
+#python train_sagemaker.py --cfg cfg/training/yolov7-tiny.yaml --hyp data/hyp.scratch.tiny.yaml --name exp --epochs 5 --batch-size 3 --data dataset/data.yaml --img 640 --weights dataset/model.pt
