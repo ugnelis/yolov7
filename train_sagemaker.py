@@ -496,7 +496,7 @@ def train(hyp, opt, device, tb_writer=None):
                     if opt.best_pt_dir:
                         best_pt_dir = Path(opt.best_pt_dir)
                         best_pt_dir.mkdir(parents=True, exist_ok=True)
-                        torch.save(ckpt['model'], best_pt_dir / 'best.pt')
+                        torch.save(ckpt['model'], best_pt_dir / 'model.pt')
                 if (best_fitness == fi) and (epoch >= 200):
                     torch.save(ckpt, checkpoints_dir / 'best_{:03d}.pt'.format(epoch))
                 if epoch == 0:
