@@ -483,14 +483,14 @@ def train(hyp, opt, device, tb_writer=None):
                         'optimizer': optimizer.state_dict(),
                         'wandb_id': wandb_logger.wandb_run.id if wandb_logger.wandb else None}
 
-                checkpoint_dir = Path(opt.checkpoint_dir) if opt.checkpoint_dir else wdir
-                checkpoint_dir.mkdir(parents=True, exist_ok=True)
+                checkpoints_dir = Path(opt.checkpoints_dir) if opt.checkpoints_dir else wdir
+                checkpoints_dir.mkdir(parents=True, exist_ok=True)
 
                 # Save last, best and delete
-                torch.save(ckpt, checkpoint_dir / 'last.pt')
+                torch.save(ckpt, checkpoints_dir / 'last.pt')
 
                 if best_fitness == fi:
-                    torch.save(ckpt, checkpoint_dir / 'best.pt')
+                    torch.save(ckpt, checkpoints_dir / 'best.pt')
 
                     # If a separate directory for best.pt is specified, save it there
                     if opt.best_pt_dir:
@@ -498,13 +498,13 @@ def train(hyp, opt, device, tb_writer=None):
                         best_pt_dir.mkdir(parents=True, exist_ok=True)
                         torch.save(ckpt['model'], best_pt_dir / 'best.pt')
                 if (best_fitness == fi) and (epoch >= 200):
-                    torch.save(ckpt, checkpoint_dir / 'best_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, checkpoints_dir / 'best_{:03d}.pt'.format(epoch))
                 if epoch == 0:
-                    torch.save(ckpt, checkpoint_dir / 'epoch_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, checkpoints_dir / 'epoch_{:03d}.pt'.format(epoch))
                 elif ((epoch + 1) % 5) == 0:
-                    torch.save(ckpt, checkpoint_dir / 'epoch_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, checkpoints_dir / 'epoch_{:03d}.pt'.format(epoch))
                 elif epoch >= (epochs - 5):
-                    torch.save(ckpt, checkpoint_dir / 'epoch_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, checkpoints_dir / 'epoch_{:03d}.pt'.format(epoch))
                 if wandb_logger.wandb:
                     if ((epoch + 1) % opt.save_period == 0 and not final_epoch) and opt.save_period != -1:
                         wandb_logger.log_model(
@@ -597,7 +597,7 @@ if __name__ == '__main__':
     parser.add_argument('--freeze', nargs='+', type=int, default=[0], help='Freeze layers: backbone of yolov7=50, first3=0 1 2')
     parser.add_argument('--v5-metric', action='store_true', help='assume maximum recall as 1.0 in AP calculation')
     parser.add_argument('--best-pt-dir', type=str, default='model', help='directory to store best.pt separately')
-    parser.add_argument('--checkpoint-dir', type=str, default='checkpoints',
+    parser.add_argument('--checkpoints-dir', type=str, default='checkpoints',
                         help='directory to store all checkpoints (e.g., last.pt, epoch checkpoints)')
     opt = parser.parse_args()
 

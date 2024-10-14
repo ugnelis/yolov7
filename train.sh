@@ -1,2 +1,4 @@
-python train_sagemaker.py --cfg cfg/training/yolov7-tiny.yaml --hyp data/hyp.scratch.tiny.yaml --name exp --epochs 5 --batch-size 3 --data dataset/data.yaml --img 640 --best-pt-dir ./model --use-initial-weights True
+#python train_sagemaker.py --cfg cfg/training/yolov7-tiny.yaml --hyp data/hyp.scratch.tiny.yaml --name exp --epochs 5 --batch-size 3 --data dataset/data.yaml --img 640 --best-pt-dir ./model --use-initial-weights True
 #python train_sagemaker.py --cfg cfg/training/yolov7-tiny.yaml --hyp data/hyp.scratch.tiny.yaml --name exp --epochs 5 --batch-size 3 --data dataset/data.yaml --img 640 --weights dataset/model.pt
+
+python train_sagemaker.py --batch-size 2 --best-pt-dir ./model --cfg ./cfg/training/yolov7-tiny.yaml --checkpoints-dir ./checkpoints --data ./dataset/data.yaml --epochs 5 --hyp data/hyp.scratch.tiny.yaml --img 640 --name UniqueName --use-initial-weights False
