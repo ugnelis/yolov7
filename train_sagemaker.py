@@ -52,6 +52,9 @@ def train(hyp, opt, device, tb_writer=None):
     save_dir, epochs, batch_size, total_batch_size, weights, rank, freeze = \
         Path(opt.save_dir), opt.epochs, opt.batch_size, opt.total_batch_size, opt.weights, opt.global_rank, opt.freeze
 
+    save_dir = Path(opt.checkpoints_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
+
     # Directories
     wdir = save_dir / 'weights'
     wdir.mkdir(parents=True, exist_ok=True)  # make dir
@@ -496,10 +499,10 @@ def train(hyp, opt, device, tb_writer=None):
                 checkpoints_dir.mkdir(parents=True, exist_ok=True)
 
                 # Save last, best and delete
-                torch.save(ckpt, checkpoints_dir / 'last.pt')
+                torch.save(ckpt, last)
 
                 if best_fitness == fi:
-                    torch.save(ckpt, checkpoints_dir / 'best.pt')
+                    torch.save(ckpt, best)
 
                     # If a separate directory for best.pt is specified, save it there
                     if opt.best_pt_dir:
@@ -507,13 +510,13 @@ def train(hyp, opt, device, tb_writer=None):
                         best_pt_dir.mkdir(parents=True, exist_ok=True)
                         torch.save(ckpt['model'], best_pt_dir / 'model.pt')
                 if (best_fitness == fi) and (epoch >= 200):
-                    torch.save(ckpt, checkpoints_dir / 'best_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, wdir / 'best_{:03d}.pt'.format(epoch))
                 if epoch == 0:
-                    torch.save(ckpt, checkpoints_dir / 'epoch_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
                 elif ((epoch + 1) % 5) == 0:
-                    torch.save(ckpt, checkpoints_dir / 'epoch_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
                 elif epoch >= (epochs - 5):
-                    torch.save(ckpt, checkpoints_dir / 'epoch_{:03d}.pt'.format(epoch))
+                    torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
                 if wandb_logger.wandb:
                     if ((epoch + 1) % opt.save_period == 0 and not final_epoch) and opt.save_period != -1:
                         wandb_logger.log_model(
